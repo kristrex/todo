@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/alexeyco/simpletable"
@@ -76,13 +77,69 @@ func (t *Todos) Store(filename string) error {
 		return err
 	}
 
-	return ioutil.WriteFile(filename, data, 0644)
+	return os.WriteFile(filename, data, 0644)
 }
 
 func (t *Todos) Print() {
 	table := simpletable.New()
 
 	table.Header = &simpletable.Header{
-		Cells: ,
+		Cells: []*simpletable.Cell{
+			{Align: simpletable.AlignCenter, Text: "#"},
+			{Align: simpletable.AlignCenter, Text: "Task"},
+			{Align: simpletable.AlignCenter, Text: "Done?"},
+			{Align: simpletable.AlignCenter, Text: "CreatedAt"},
+			{Align: simpletable.AlignCenter, Text: "CompletedAt"},
+		},
 	}
+
+	var cells [][]*simpletable.Cell
+
+	for index, item := range *t {
+		index++
+		task := makeBlue(item.Task)
+		done := makeRed("no")
+		timeCreated := makeGray(item.CreatedAt.Format(time.RFC822))
+		timeCompleted := makeGray(item.CompletedAt.Format(time.RFC822))
+
+		if item.Done {
+			task = makeGreen(fmt.Sprintf("\u2705 %s", item.Task))
+			done = makeGreen("yes")
+		}
+
+		cells = append(cells, *&[]*simpletable.Cell{
+			{Text: fmt.Sprintf("%d", index)},
+			{Text: task},
+			{Text: done},
+			{Text: timeCreated},
+			{Text: timeCompleted},
+		})
+	}
+
+	table.Body = &simpletable.Body{Cells: cells}
+
+	compl, notcompl := t.CountTask()
+	compltask := makeGreen(strconv.Itoa(compl))
+	notcompltask := makeRed(strconv.Itoa(notcompl))
+
+	table.Footer = &simpletable.Footer{Cells: []*simpletable.Cell{
+		{Align: simpletable.AlignCenter, Span: 5, Text: fmt.Sprintf("Task completed %s\nUnfulfilled task %s", compltask, notcompltask)},
+	}}
+
+	table.SetStyle(simpletable.StyleUnicode)
+
+	table.Println()
+}
+
+func (t *Todos) CountTask() (int, int) {
+	totalcompl := 0
+	total := 0
+	for _, item := range *t {
+		if item.Done {
+			totalcompl++
+		} else {
+			total++
+		}
+	}
+	return total, totalcompl
 }
