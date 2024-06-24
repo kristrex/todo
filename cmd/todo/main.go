@@ -32,39 +32,23 @@ func main() {
 	switch {
 	case *add:
 		task, err := getInput(os.Stdin, flag.Args()...)
-		if err != nil {
-			fmt.Println(os.Stderr, err.Error())
-			os.Exit(1)
-		}
+
+		todo.OutError(err)
 
 		todos.Add(task)
-		err = todos.Store(todoFile)
-		if err != nil {
-			fmt.Println(os.Stderr, err.Error())
-			os.Exit(1)
-		}
+		todos.Writing(todoFile)
 	case *complete > 0:
 		err := todos.Complete(*complete)
-		if err != nil {
-			fmt.Println(os.Stderr, err.Error())
-			os.Exit(1)
-		}
-		err = todos.Store(todoFile)
-		if err != nil {
-			fmt.Println(os.Stderr, err.Error())
-			os.Exit(1)
-		}
+
+		todo.OutError(err)
+
+		todos.Writing(todoFile)
 	case *delete > 0:
 		err := todos.Delete(*delete)
-		if err != nil {
-			fmt.Println(os.Stderr, err.Error())
-			os.Exit(1)
-		}
-		err = todos.Store(todoFile)
-		if err != nil {
-			fmt.Println(os.Stderr, err.Error())
-			os.Exit(1)
-		}
+
+		todo.OutError(err)
+
+		todos.Writing(todoFile)
 	case *list:
 		todos.Print()
 	default:

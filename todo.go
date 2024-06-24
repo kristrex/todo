@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strconv"
 	"time"
@@ -53,7 +52,7 @@ func (t *Todos) Delete(index int) error {
 }
 
 func (t *Todos) Load(filename string) error {
-	file, err := ioutil.ReadFile(filename)
+	file, err := os.ReadFile(filename)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			fmt.Println("File not Exist!!!")
@@ -78,6 +77,14 @@ func (t *Todos) Store(filename string) error {
 	}
 
 	return os.WriteFile(filename, data, 0644)
+}
+
+func (todos *Todos) Writing(todoFile string) {
+	err := todos.Store(todoFile)
+	if err != nil {
+		fmt.Println(os.Stderr, err.Error())
+		os.Exit(1)
+	}
 }
 
 func (t *Todos) Print() {
@@ -141,5 +148,12 @@ func (t *Todos) CountTask() (int, int) {
 			total++
 		}
 	}
-	return total, totalcompl
+	return totalcompl, total
+}
+
+func OutError(err error) {
+	if err != nil {
+		fmt.Println(os.Stderr, err.Error())
+		os.Exit(1)
+	}
 }
